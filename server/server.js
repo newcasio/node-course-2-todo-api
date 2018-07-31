@@ -24,6 +24,8 @@ app.post('/todos', (req,res) =>{
   });
 });
 
+
+
 app.get('/todos', (req,res)=>{
   Todo.find().then((todos)=>{
     res.send({todos})
@@ -31,6 +33,7 @@ app.get('/todos', (req,res)=>{
     res.status(400).send(e);
   });
 });
+
 
 app.get('/todos/:blue', (req,res)=>{
   var ident  = req.params.blue;
@@ -46,6 +49,24 @@ app.get('/todos/:blue', (req,res)=>{
     res.send({todo});
   }).catch((e)=>{
     res.status(400).send('failed');
+  });
+});
+
+
+app.delete('/todos/:pink', (req,res)=>{
+  var IDent = req.params.pink;
+
+  if(!ObjectId.isValid(IDent)){
+    res.status(404).send('ID not valid');
+  };
+
+  Todo.findByIdAndRemove(IDent).then((result)=>{
+    if (!result){
+      res.status(404).send('Good id but not found');
+    }
+    res.send(result);
+  }).catch((e)=>{
+    res.status(400).send('Some wrong code here')
   });
 });
 

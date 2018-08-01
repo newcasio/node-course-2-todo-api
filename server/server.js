@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('lodash');
 
 var {ObjectId}  = require('mongodb');
 var {mongoose} = require('./db/mongoose.js');
@@ -64,10 +65,37 @@ app.delete('/todos/:pink', (req,res)=>{
     if (!result){
       res.status(404).send('Good id but not found');
     }
-    res.send(result);
+    res.send({result});
   }).catch((e)=>{
     res.status(400).send('Some wrong code here')
   });
+});
+
+
+app.patch('/todos/:id', (req,res)=>{
+  var id = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  if(!ObjectId.isValid(id)){
+    res.status(404).send('ID not valid');
+  };
+
+  if (_.isBoolean(body.completed) && body.completed){
+    body.completedAt = new Date().getTime();
+  }else{
+    body.completed = false;
+    body.completedAt=null;
+  }
+
+  Todo.findByIdAndUpdate(id, {$set:body}, {new: true}).then((todo) =>{
+    if(!todo){
+      return res.status(404).send('no id found to update');
+    }
+
+    res.send({todo});
+  }).catch((e)=>{
+    res.status(400).send('some wrong code here')
+  })
 });
 
 app.listen(port, () =>{
